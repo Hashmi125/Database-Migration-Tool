@@ -1,0 +1,22 @@
+DatabaseMigrationTool/
+│
+├── README.md
+├── DatabaseMigrationTool.sln
+├── DatabaseMigrationTool/
+│   ├── DatabaseMigrationTool.csproj
+│   ├── Program.cs
+│   ├── Migrations/
+│   ├── Data/
+│   │   ├── ApplicationDbContext.cs
+│   │   ├── IDatabaseProvider.cs
+│   │   ├── SqlServerProvider.cs
+│   │   ├── MySqlProvider.cs
+│   │   └── PostgreSqlProvider.cs
+│   ├── Services/
+│   │   ├── MigrationService.cs
+│   │   └── ValidationService.cs
+│   └── Models/
+│       └── SampleEntity.cs
+├── appsettings.json
+└── tests/
+    └── DatabaseMigrationTool.Tests.csproj
