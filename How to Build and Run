@@ -1,0 +1,21 @@
+Open terminal in project root.
+Restore and build:
+bash
+
+Run
+Copy code
+dotnet restore
+dotnet build
+Run the migration tool:
+bash
+
+Run
+Copy code
+dotnet run --project DatabaseMigrationTool
+Run tests:
+bash
+
+Run
+Copy code
+dotnet test tests
+This project is a solid starting point for an enterprise-grade database migration tool with multi-DB support, validation, and rollback placeholders. You can extend rollback with backups or custom scripts, and add CLI or UI as needed.
