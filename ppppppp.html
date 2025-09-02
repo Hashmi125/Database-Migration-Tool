@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Migration Tool Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .database-selector {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .database-selector h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        select, button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        select {
+            background: white;
+            border: 2px solid #ddd;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-panel {
+            background: #ecf0f1;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #27ae60;
+        }
+
+        .status-panel h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .status-pending { background: #f39c12; }
+        .status-running { background: #3498db; animation: pulse 1.5s infinite; }
+        .status-success { background: #27ae60; }
+        .status-error { background: #e74c3c; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .logs-container {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .log-entry {
+            margin: 8px 0;
+            padding: 5px;
+            border-left: 3px solid transparent;
+        }
+
+        .log-info { border-left-color: #3498db; }
+        .log-success { border-left-color: #27ae60; }
+        .log-warning { border-left-color: #f39c12; }
+        .log-error { border-left-color: #e74c3c; }
+
+        .database-icons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(236, 240, 241, 0.3);
+            border-radius: 10px;
+        }
+
+        .db-icon {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .db-icon:hover {
+            transform: translateY(-5px);
+        }
+
+        .db-icon img {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #34495e;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .database-icons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Database Migration Tool</h1>
+            <p>Enterprise-grade database migration and synchronization tool</p>
+        </header>
+
+        <div class="main-content">
+            <div class="database-selector">
+                <h2>Select Database Provider</h2>
+                <select id="databaseProvider">
+                    <option value="">-- Choose Database --</option>
+                    <option value="sqlserver">SQL Server</option>
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                </select>
+                <br>
+                <button id="runMigration" onclick="runMigration()">Run Migration</button>
+                <button id="rollbackBtn" onclick="rollbackMigration()" disabled>Rollback</button>
+            </div>
+
+            <div class="status-panel">
+                <h2>Migration Status</h2>
+                <div class="status-indicator">
+                    <div class="status-dot status-pending" id="validationStatus"></div>
+                    <span>Data Validation</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot status-pending" id="migrationStatus"></div>
+                    <span>Migration Process</span>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot status-pending" id="rollbackStatus"></div>
+                    <span>Rollback Capability</span>
+                </div>
+            </div>
+
+            <h2>Migration Logs</h2>
+            <div class="logs-container" id="logs">
+                <div class="log-entry log-info">System ready. Select a database provider and click "Run Migration" to start.</div>
+            </div>
+
+            <div class="database-icons">
+                <div class="db-icon">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/2a50e16b-5516-4e8a-aa9b-92ab9b30a2c9.png" alt="SQL Server database icon with blue background">
+                    <div>SQL Server</div>
+                </div>
+                <div class="db-icon">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/3c5ad033-a886-4e73-80f9-5ddb951394ae.png" alt="MySQL database icon with green background">
+                    <div>MySQL</div>
+                </div>
+                <div class="db-icon">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4ef42840-4c1e-4a90-a243-5486c365f13a.png" alt="PostgreSQL database icon with red background">
+                    <div>PostgreSQL</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Database Migration Tool Demo • Enterprise Grade • Multi-Database Support</p>
+        </footer>
+    </div>
+
+    <script>
+        let migrationRunning = false;
+        let migrationCompleted = false;
+        const logsContainer = document.getElementById('logs');
+        const runButton = document.getElementById('runMigration');
+        const rollbackButton = document.getElementById('rollbackBtn');
+        const validationStatus = document.getElementById('validationStatus');
+        const migrationStatus = document.getElementById('migrationStatus');
+        const rollbackStatus = document.getElementById('rollbackStatus');
+
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
+
+        function updateStatus(element, status) {
+            element.className = `status-dot status-${status}`;
+        }
+
+        function runMigration() {
+            const provider = document.getElementById('databaseProvider').value;
+            
+            if (!provider) {
+                addLog('Please select a database provider first!', 'warning');
+                return;
+            }
+
+            if (migrationRunning) return;
+
+            migrationRunning = true;
+            runButton.disabled = true;
+            rollbackButton.disabled = true;
+
+            // Reset status indicators
+            updateStatus(validationStatus, 'pending');
+            updateStatus(migrationStatus, 'pending');
+            updateStatus(rollbackStatus, 'pending');
+
+            addLog(`Starting migration for ${provider.toUpperCase()}...`, 'info');
+
+            // Simulate validation
+            updateStatus(validationStatus, 'running');
+            addLog('Validating source database structure...', 'info');
+            
+            setTimeout(() => {
+                addLog('Validation completed successfully', 'success');
+                updateStatus(validationStatus, 'success');
+
+                // Simulate migration process
+                updateStatus(migrationStatus, 'running');
+                addLog('Beginning migration process...', 'info');
+                
+                setTimeout(() => {
+                    addLog('Creating database schema...', 'info');
+                    
+                    setTimeout(() => {
+                        addLog('Migrating table data...', 'info');
+                        
+                        setTimeout(() => {
+                            addLog('Applying indexes and constraints...', 'info');
+                            
+                            setTimeout(() => {
+                                addLog('Migration completed successfully!', 'success');
+                                updateStatus(migrationStatus, 'success');
+                                updateStatus(rollbackStatus, 'success');
+                                
+                                addLog('System is ready for rollback if needed', 'info');
+                                migrationRunning = false;
+                                migrationCompleted = true;
+                                runButton.disabled = false;
+                                rollbackButton.disabled = false;
+                                
+                            }, 1500);
+                        }, 1500);
+                    }, 1500);
+                }, 1000);
+            }, 1000);
+        }
+
+        function rollbackMigration() {
+            if (!migrationCompleted) {
+                addLog('No migration to rollback', 'warning');
+                return;
+            }
+
+            migrationRunning = true;
+            runButton.disabled = true;
+            rollbackButton.disabled = true;
+
+            addLog('Starting rollback process...', 'warning');
+            updateStatus(rollbackStatus, 'running');
+
+            setTimeout(() => {
+                addLog('Creating backup of current state...', 'info');
+                
+                setTimeout(() => {
+                    addLog('Reverting changes...', 'info');
+                    
+                    setTimeout(() => {
+                        addLog('Rollback completed successfully', 'success');
+                        updateStatus(rollbackStatus, 'success');
+                        
+                        migrationRunning = false;
+                        migrationCompleted = false;
+                        runButton.disabled = false;
+                        rollbackButton.disabled = true;
+                        
+                    }, 1500);
+                }, 1500);
+            }, 1000);
+        }
+
+        // Add some sample logs on load
+        setTimeout(() => {
+            addLog('System initialized successfully', 'success');
+            addLog('Supported databases: SQL Server, MySQL, PostgreSQL', 'info');
+            addLog('Ready to process migration requests', 'info');
+        }, 500);
+    </script>
+</body>
+</html>
+
+``` Login to continue using Login to continue using
