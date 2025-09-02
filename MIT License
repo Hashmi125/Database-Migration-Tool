@@ -1,0 +1,14 @@
+
+---
+
+### appsettings.json
+
+```json
+{
+  "ConnectionStrings": {
+    "SqlServer": "Server=localhost;Database=TestDb;User  Id=sa;Password=Your_password123;",
+    "MySql": "server=localhost;port=3306;database=TestDb;user=root;password=Your_password123;",
+    "PostgreSql": "Host=localhost;Database=TestDb;Username=postgres;Password=Your_password123;"
+  },
+  "DatabaseProvider": "SqlServer"  // Change to MySql or PostgreSql as needed
+}
